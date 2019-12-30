@@ -78,6 +78,7 @@ void SetDataTypeForAllOutputs(Model* model, Operator* op,
       break;
     case OperatorType::kSplit:
     case OperatorType::kConcat:
+    case OperatorType::kConcatenation:
     case OperatorType::kFill: {
       // These operators produce an output with the same type as their 2nd input
       CHECK_GE(op->inputs.size(), 2);
@@ -172,6 +173,10 @@ void SetDataTypeForAllOutputs(Model* model, Operator* op,
       break;
     }
     case OperatorType::kExpandDims: {
+      // Fix:wtt maybe can not convert to reshape
+      CHECK_GT(op->inputs.size(), 0);
+      const ArrayDataType data_type = model->GetArray(op->inputs[0]).data_type;
+      SetDataTypeForAllOutputs(model, op, data_type);
       // Yield on ExpandDim until it is converted to Reshape
       return ::tensorflow::Status::OK();
     }
